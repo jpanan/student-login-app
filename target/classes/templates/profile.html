@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile - EduPortal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="navbar">
+                <h1>🎓 EduPortal</h1>
+                <div class="nav-links">
+                    <a th:href="@{/dashboard}">Dashboard</a>
+                    <a th:href="@{/logout}">Logout</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="welcome-section">
+            <h1>👤 Student Profile</h1>
+            <p>Manage your personal information and account settings</p>
+        </div>
+
+        <!-- Profile Information Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Personal Information</h2>
+                <p>Your basic profile details</p>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-item">
+                    <h4>Full Name</h4>
+                    <p th:text="${student.firstName + ' ' + student.lastName}">John Doe</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>Username</h4>
+                    <p th:text="${student.username}">johndoe</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>Email Address</h4>
+                    <p th:text="${student.email}">john.doe@email.com</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>Student ID</h4>
+                    <p th:text="${student.studentId != null ? student.studentId : 'Not specified'}">STU001</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>Course</h4>
+                    <p th:text="${student.course != null ? student.course : 'Not specified'}">Computer Science</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>Year</h4>
+                    <p th:text="${student.year != null ? student.year + (student.year == 1 ? 'st' : student.year == 2 ? 'nd' : student.year == 3 ? 'rd' : 'th') + ' Year' : 'Not specified'}">3rd Year</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <button class="btn btn-primary" onclick="toggleEditMode()">Edit Profile</button>
+            </div>
+        </div>
+
+        <!-- Account Settings Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>⚙️ Account Settings</h2>
+                <p>Manage your account preferences and security</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div class="dashboard-card" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);">
+                    <h3>🔒 Change Password</h3>
+                    <p>Update your account password for better security</p>
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn btn-outline" style="color: white; border-color: white;" onclick="showPasswordForm()">Change Password</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-card" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
+                    <h3>📧 Email Preferences</h3>
+                    <p>Manage your notification and email preferences</p>
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn btn-outline" style="color: white; border-color: white;" onclick="showEmailPreferences()">Manage Preferences</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-card" style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);">
+                    <h3>🗑️ Account Actions</h3>
+                    <p>Download your data or deactivate your account</p>
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn btn-outline" style="color: white; border-color: white;" onclick="showAccountActions()">Account Actions</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Summary Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📊 Academic Summary</h2>
+                <p>Your academic performance overview</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div class="info-item">
+                    <h4>Current GPA</h4>
+                    <p style="font-size: 1.5rem; color: #48bb78; font-weight: bold;">3.75</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>Credits Completed</h4>
+                    <p style="font-size: 1.5rem; color: #4299e1; font-weight: bold;">84</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>Current Semester</h4>
+                    <p style="font-size: 1.5rem; color: #ed8936; font-weight: bold;">Spring 2024</p>
+                </div>
+
+                <div class="info-item">
+                    <h4>Enrolled Courses</h4>
+                    <p style="font-size: 1.5rem; color: #9f7aea; font-weight: bold;">5</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📈 Recent Academic Activity</h2>
+                <p>Your latest achievements and submissions</p>
+            </div>
+
+            <div style="space-y: 1rem;">
+                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem;">
+                    <h4 style="margin-bottom: 0.5rem;">🏆 Achievement Unlocked</h4>
+                    <p style="opacity: 0.9; font-size: 0.9rem;">Completed 10 assignments with perfect scores</p>
+                </div>
+                
+                <div style="background: #f7fafc; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border-left: 4px solid #48bb78;">
+                    <h4 style="color: #2d3748; margin-bottom: 0.5rem;">Assignment Graded</h4>
+                    <p style="color: #4a5568; font-size: 0.9rem;">Data Structures Project - Grade: A+ (95/100)</p>
+                </div>
+                
+                <div style="background: #f7fafc; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border-left: 4px solid #4299e1;">
+                    <h4 style="color: #2d3748; margin-bottom: 0.5rem;">Course Progress</h4>
+                    <p style="color: #4a5568; font-size: 0.9rem;">Advanced Algorithms - 75% Complete</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Edit Profile (Hidden by default) -->
+    <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 20px; max-width: 500px; width: 90%;">
+            <h3 style="margin-bottom: 1.5rem; color: #4a5568;">Edit Profile Information</h3>
+            <p style="color: #718096; margin-bottom: 1rem;">This is a demo - actual editing functionality would be implemented here.</p>
+            <div class="text-center">
+                <button class="btn btn-secondary" onclick="toggleEditMode()" style="margin-right: 1rem;">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleEditMode() {
+            const modal = document.getElementById('editModal');
+            modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function saveProfile() {
+            alert('Profile saved successfully! (Demo functionality)');
+            toggleEditMode();
+        }
+
+        function showPasswordForm() {
+            alert('Password change form would open here (Demo functionality)');
+        }
+
+        function showEmailPreferences() {
+            alert('Email preferences panel would open here (Demo functionality)');
+        }
+
+        function showAccountActions() {
+            alert('Account actions panel would open here (Demo functionality)');
+        }
+
+        // Add some profile interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate profile cards on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'slideIn 0.6s ease-out';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.card').forEach(card => {
+                observer.observe(card);
+            });
+
+            // Add hover effects to dashboard cards
+            document.querySelectorAll('.dashboard-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

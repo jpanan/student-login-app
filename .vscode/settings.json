@@ -1,0 +1,45 @@
+{
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": false,
+        "markdown": true,
+        "scminput": false,
+        "java": true,
+        "xml": true,
+        "properties": true,
+        "yaml": true,
+        "json": true
+    },
+    "github.copilot.advanced": {
+        "secret_redaction": false,
+        "length": 500,
+        "temperature": "",
+        "top_p": "",
+        "stops": {
+            "*": ["\n\n"]
+        },
+        "indentationMode": {
+            "*": "hybrid",
+            "java": "hybrid"
+        },
+        "inlineSuggestCount": 3,
+        "listCount": 10,
+        "debug.overrideEngine": "",
+        "debug.overrideProxyUrl": "",
+        "debug.testOverrideProxyUrl": "",
+        "debug.filterLogCategories": []
+    },
+    "github.copilot.chat.localeOverride": "",
+    "github.copilot.chat.welcomeMessage": "default",
+    "editor.inlineSuggest.enabled": true,
+    "editor.inlineSuggest.showToolbar": "always",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.codeGeneration.insertionLocation": "afterCursor",
+    "java.saveActions.organizeImports": true,
+    "files.associations": {
+        "*.java": "java"
+    },
+    "editor.rulers": [100, 120],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 120
+}

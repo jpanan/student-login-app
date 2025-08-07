@@ -1,0 +1,190 @@
+name: Automated Code Review with Copilot
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+
+    - name: Install GitHub CLI
+      run: |
+        type -p curl >/dev/null || sudo apt update && sudo apt install curl -y
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt update
+        sudo apt install gh -y
+
+    - name: Authenticate GitHub CLI
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+    - name: Compile and Test
+      run: |
+        mvn clean compile
+        mvn test || true
+
+    - name: Security Review
+      run: |
+        echo "## 🔒 Security Review" >> review_report.md
+        echo "Analyzing code for security vulnerabilities..." >> review_report.md
+        
+        # Check for common security issues in Java files
+        find src/main/java -name "*.java" -exec grep -l "password\|secret\|key" {} \; | while read file; do
+          echo "⚠️ **Security Alert**: File \`$file\` contains sensitive keywords" >> review_report.md
+        done
+        
+        # Check for SQL injection patterns
+        find src/main/java -name "*.java" -exec grep -l "createNativeQuery\|createQuery" {} \; | while read file; do
+          echo "⚠️ **SQL Review**: Check \`$file\` for potential SQL injection" >> review_report.md
+        done
+        
+        echo "" >> review_report.md
+
+    - name: Code Quality Review
+      run: |
+        echo "## 📊 Code Quality Analysis" >> review_report.md
+        
+        # Check for large files
+        find src/main/java -name "*.java" -size +500c | while read file; do
+          lines=$(wc -l < "$file")
+          if [ $lines -gt 200 ]; then
+            echo "📏 **Large File**: \`$file\` has $lines lines (consider refactoring)" >> review_report.md
+          fi
+        done
+        
+        # Check for TODO/FIXME comments
+        grep -r "TODO\|FIXME\|XXX" src/main/java/ | while read line; do
+          echo "📝 **Action Item**: $line" >> review_report.md
+        done
+        
+        echo "" >> review_report.md
+
+    - name: Architecture Review
+      run: |
+        echo "## 🏗️ Architecture Review" >> review_report.md
+        
+        # Check for proper layer separation
+        controllers=$(find src/main/java -path "*controller*" -name "*.java" | wc -l)
+        services=$(find src/main/java -path "*service*" -name "*.java" | wc -l)
+        repositories=$(find src/main/java -path "*repository*" -name "*.java" | wc -l)
+        
+        echo "📊 **Layer Distribution**:" >> review_report.md
+        echo "- Controllers: $controllers files" >> review_report.md
+        echo "- Services: $services files" >> review_report.md
+        echo "- Repositories: $repositories files" >> review_report.md
+        
+        # Check for circular dependencies
+        echo "🔄 **Dependency Analysis**: Run \`mvn dependency:analyze\` locally to check for unused dependencies" >> review_report.md
+        
+        echo "" >> review_report.md
+
+    - name: Performance Review
+      run: |
+        echo "## ⚡ Performance Review" >> review_report.md
+        
+        # Check for N+1 query patterns
+        find src/main/java -name "*.java" -exec grep -l "@OneToMany\|@ManyToMany" {} \; | while read file; do
+          echo "🔍 **Performance Check**: Review \`$file\` for potential N+1 query issues" >> review_report.md
+        done
+        
+        # Check for missing @Transactional
+        find src/main/java -path "*service*" -name "*.java" -exec grep -L "@Transactional" {} \; | while read file; do
+          echo "⚡ **Transaction Check**: Consider adding @Transactional to \`$file\`" >> review_report.md
+        done
+        
+        echo "" >> review_report.md
+
+    - name: Generate Diff Analysis
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "## 📋 Changed Files Analysis" >> review_report.md
+        
+        # Get list of changed files
+        git diff --name-only origin/${{ github.base_ref }}..HEAD | while read file; do
+          if [[ $file == *.java ]]; then
+            echo "### Changes in \`$file\`" >> review_report.md
+            
+            # Get the diff for this file
+            git diff origin/${{ github.base_ref }}..HEAD -- "$file" > temp_diff.txt
+            
+            # Count additions and deletions
+            additions=$(grep "^+" temp_diff.txt | grep -v "^+++" | wc -l)
+            deletions=$(grep "^-" temp_diff.txt | grep -v "^---" | wc -l)
+            
+            echo "- ➕ **Additions**: $additions lines" >> review_report.md
+            echo "- ➖ **Deletions**: $deletions lines" >> review_report.md
+            
+            # Check for common issues in changes
+            if grep -q "System.out.println\|printStackTrace" temp_diff.txt; then
+              echo "- ⚠️ **Debug Code**: Remove debug statements before merge" >> review_report.md
+            fi
+            
+            if grep -q "// TODO\|// FIXME" temp_diff.txt; then
+              echo "- 📝 **TODOs Added**: Address TODO comments" >> review_report.md
+            fi
+            
+            echo "" >> review_report.md
+            rm -f temp_diff.txt
+          fi
+        done
+
+    - name: Post Review Comment
+      if: github.event_name == 'pull_request'
+      run: |
+        if [ -f review_report.md ]; then
+          echo "# 🤖 Automated Code Review Report" > final_review.md
+          echo "" >> final_review.md
+          echo "*This review was automatically generated. Please address the findings before merging.*" >> final_review.md
+          echo "" >> final_review.md
+          cat review_report.md >> final_review.md
+          
+          gh pr comment ${{ github.event.pull_request.number }} --body-file final_review.md
+        fi
+
+    - name: Create Issue for Code Quality
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        if [ -f review_report.md ]; then
+          echo "# 📊 Code Quality Report - $(date)" > quality_report.md
+          echo "" >> quality_report.md
+          echo "Automated analysis of recent changes to main branch." >> quality_report.md
+          echo "" >> quality_report.md
+          cat review_report.md >> quality_report.md
+          
+          gh issue create --title "Code Quality Report - $(date +%Y-%m-%d)" --body-file quality_report.md --label "code-quality"
+        fi
+
+    - name: Upload Review Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-review-report
+        path: |
+          review_report.md
+          final_review.md
+          quality_report.md

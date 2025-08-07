@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration - EduPortal</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="navbar">
+                <h1>🎓 EduPortal</h1>
+                <div class="nav-links">
+                    <a th:href="@{/login}">Login</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="max-width: 600px; margin: 2rem auto;">
+            <div class="card-header">
+                <h2>Create Account</h2>
+                <p>Join our student community today</p>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <form th:action="@{/register}" method="post" th:object="${student}">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" th:field="*{firstName}" class="form-control" 
+                               placeholder="Enter first name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" th:field="*{lastName}" class="form-control" 
+                               placeholder="Enter last name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" th:field="*{username}" class="form-control" 
+                           placeholder="Choose a username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" th:field="*{email}" class="form-control" 
+                           placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" th:field="*{password}" class="form-control" 
+                           placeholder="Create a password" required minlength="6">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="studentId">Student ID (Optional)</label>
+                        <input type="text" id="studentId" th:field="*{studentId}" class="form-control" 
+                               placeholder="Enter student ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="year">Year (Optional)</label>
+                        <select id="year" th:field="*{year}" class="form-control">
+                            <option value="">Select Year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="course">Course (Optional)</label>
+                    <input type="text" id="course" th:field="*{course}" class="form-control" 
+                           placeholder="Enter your course">
+                </div>
+
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </form>
+
+            <div class="text-center mt-3">
+                <p>Already have an account? 
+                    <a th:href="@{/login}" style="color: #667eea; font-weight: 600;">Sign in here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const inputs = document.querySelectorAll('.form-control');
+            
+            // Add focus effects
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.transform = 'scale(1.02)';
+                });
+                input.addEventListener('blur', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Form validation
+            form.addEventListener('submit', function(e) {
+                const password = document.getElementById('password').value;
+                if (password.length < 6) {
+                    e.preventDefault();
+                    alert('Password must be at least 6 characters long!');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

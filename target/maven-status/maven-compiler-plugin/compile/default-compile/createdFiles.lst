@@ -1,0 +1,9 @@
+com/studentapp/config/DataInitializer.class
+com/studentapp/StudentLoginApplication.class
+com/studentapp/controller/StudentController.class
+com/studentapp/service/CustomUserDetailsService.class
+com/studentapp/config/SecurityConfig.class
+com/studentapp/config/PasswordConfig.class
+com/studentapp/repository/StudentRepository.class
+com/studentapp/model/Student.class
+com/studentapp/service/StudentService.class
