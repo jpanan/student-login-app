@@ -181,7 +181,7 @@ jobs:
         fi
 
     - name: Upload Review Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: code-review-report
         path: |
